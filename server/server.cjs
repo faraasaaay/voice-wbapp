@@ -229,6 +229,9 @@ io.on('connection', (socket) => {
                 return;
             }
 
+            // Get users before joining, so the list doesn't include the current user
+            const otherUsers = roomManager.getRoomUsers(roomId);
+
             const result = roomManager.joinRoom(socket.id, roomId);
             
             if (!result.success) {
@@ -239,29 +242,21 @@ io.on('connection', (socket) => {
             // Join the socket.io room
             socket.join(roomId);
             
-            // Notify existing users in the room
-            const roomUsers = roomManager.getRoomUsers(roomId);
-            const otherUsers = roomUsers.filter(id => id !== socket.id);
-            
-            if (otherUsers.length > 0) {
-                // Notify other users that someone joined
-                socket.to(roomId).emit('user-joined', socket.id);
-                Logger.info('User joined existing room', { 
-                    socketId: socket.id, 
-                    roomId, 
-                    roomSize: result.roomSize 
-                });
-            } else {
-                Logger.info('User created new room', { 
-                    socketId: socket.id, 
-                    roomId 
-                });
-            }
+            // Notify existing users that a new user has joined
+            socket.to(roomId).emit('user-joined', { userId: socket.id });
 
+            Logger.info('User joined room', {
+                socketId: socket.id,
+                roomId,
+                roomSize: result.roomSize
+            });
+
+            // Send room details and existing users to the new user
             socket.emit('room-joined', { 
                 roomId, 
                 isFirstUser: result.isFirstUser,
-                roomSize: result.roomSize
+                roomSize: result.roomSize,
+                existingUsers: otherUsers,
             });
 
         } catch (error) {

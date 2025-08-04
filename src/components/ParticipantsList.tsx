@@ -1,6 +1,6 @@
 import React from 'react';
-import { Mic, MicOff, User, Signal, Clock } from 'lucide-react';
-import { Participant } from '../App';
+import { User, Mic, MicOff, Users, Clock, Signal } from 'lucide-react';
+import { Participant } from '../hooks/useCallEngine';
 
 interface ParticipantsListProps {
   participants: Participant[];
