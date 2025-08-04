@@ -1,16 +1,16 @@
 {
-  "name": "vite-react-typescript-starter",
+  "name": "secure-voice",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:server": "node server/server.js",
+    "dev:server": "node server/server.cjs",
     "dev:full": "concurrently \"npm run dev:server\" \"npm run dev\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "node server/server.js"
+    "start": "node server/server.cjs"
   },
   "dependencies": {
     "cors": "^2.8.5",

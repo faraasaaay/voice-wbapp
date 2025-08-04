@@ -7,9 +7,6 @@ export class SocketService {
   async connect(serverUrl: string): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        // Convert HTTP URL to WebSocket URL for Socket.IO
-        const socketUrl = serverUrl.replace(/^http/, 'ws');
-        
         this.socket = io(serverUrl, {
           transports: ['websocket', 'polling'],
           timeout: 20000,
