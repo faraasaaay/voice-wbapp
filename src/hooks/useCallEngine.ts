@@ -32,6 +32,7 @@ export const useCallEngine = () => {
     error: null
   });
 
+  const [localAudioStream, setLocalAudioStream] = useState<MediaStream | null>(null);
   const [remoteStreams, setRemoteStreams] = useState<Map<string, MediaStream>>(new Map());
 
   const socketService = useRef<SocketService | null>(null);
@@ -58,6 +59,10 @@ export const useCallEngine = () => {
 
   const handleRemoteStream = useCallback((stream: MediaStream, peerId: string) => {
     setRemoteStreams(prev => new Map(prev).set(peerId, stream));
+  }, []);
+
+  const handleLocalStream = useCallback((stream: MediaStream) => {
+    setLocalAudioStream(stream);
   }, []);
 
   const handleConnectionStateChange = useCallback((state: RTCPeerConnectionState, peerId: string) => {
@@ -116,8 +121,13 @@ export const useCallEngine = () => {
       participants: [...prev.participants, { id: userId, isMuted: false, isConnected: false, joinedAt: new Date() }]
     }));
     try {
-      const offer = await webrtcService.current.createOffer(userId);
-      socketService.current?.emit('offer', { target: userId, sdp: offer });
+      // Create offer only if we have a local stream and are ready to connect
+      if (webrtcService.current.localStream) {
+        const offer = await webrtcService.current.createOffer(); // No userId argument
+        socketService.current?.emit('offer', { target: userId, sdp: offer });
+      } else {
+        console.warn('Local stream not available yet, cannot create offer.');
+      }
     } catch (error) {
       console.error(`Failed to create offer for ${userId}:`, error);
     }
@@ -165,7 +175,7 @@ export const useCallEngine = () => {
     s.on('disconnect', () => setCallState(prev => ({ ...prev, isConnected: false })));
     w.on('remoteStream', handleRemoteStream);
     w.on('connectionStateChange', handleConnectionStateChange);
-    w.on('localStream', (stream: MediaStream) => {}); // No-op for now
+    w.on('localStream', handleLocalStream);
 
     return () => {
       cleanup();
@@ -194,6 +204,7 @@ export const useCallEngine = () => {
     cleanup();
     callStartTime.current = null;
     setRemoteStreams(new Map());
+    setLocalAudioStream(null); // Clear local stream on leave
     setCallState({
       isInCall: false, isConnected: false, isMuted: false, roomId: null,
       participants: [], callDuration: 0, isConnecting: false, error: null
@@ -206,5 +217,5 @@ export const useCallEngine = () => {
     setCallState(prev => ({ ...prev, isMuted: newMutedState }));
   }, [callState.isMuted]);
 
-  return { callState, remoteStreams, joinRoom, leaveRoom, toggleMute };
+  return { callState, localAudioStream, remoteStreams, joinRoom, leaveRoom, toggleMute };
 };

@@ -1,5 +1,5 @@
 export class WebRTCService {
-  private localStream: MediaStream | null = null;
+  public localStream: MediaStream | null = null;
   private peerConnections: Map<string, RTCPeerConnection> = new Map();
   private eventListeners: Map<string, Function[]> = new Map();
   private isMuted: boolean = false;
@@ -107,6 +107,7 @@ export class WebRTCService {
       this.peerConnections.delete(peerId);
     }
   }
+
 
   cleanup(): void {
     // Close all peer connections

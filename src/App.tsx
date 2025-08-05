@@ -9,7 +9,7 @@ import RemoteAudioStreams from './components/RemoteAudioStreams';
 
 function App() {
   const [serverUrl, setServerUrl] = useState(import.meta.env.VITE_SERVER_URL || 'http://localhost:3001');
-  const { callState, remoteStreams, joinRoom, leaveRoom, toggleMute } = useCallEngine();
+  const { callState, localAudioStream, remoteStreams, joinRoom, leaveRoom, toggleMute } = useCallEngine();
 
   const handleJoinRoom = (roomId: string) => {
     joinRoom(roomId, serverUrl);
@@ -29,7 +29,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-      <RemoteAudioStreams remoteStreams={remoteStreams} />
+      <RemoteAudioStreams localStream={localAudioStream} remoteStreams={remoteStreams} />
       <div className="container mx-auto px-4 py-6 max-w-6xl">
         <header className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
